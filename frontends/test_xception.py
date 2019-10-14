@@ -1,6 +1,6 @@
 import tensorflow as tf
 from xception import Xception
-tf.set_random_seed(777)
+tf.random.set_seed(777)
 from PIL import Image
 import numpy as np
 from keras.applications.inception_v3 import preprocess_input #InceptionV3, Xception, InceptionResNetV2
@@ -28,8 +28,8 @@ x_test =  np.array(x_test)
 #x_test = x_test / 255
 x_test = preprocess_input(x_test)
 
-y_predict = Xception.predict(x_test, 1000)
-print(y_predict) #[[0.20842288 0.41051054 0.38106653]]
-print(y_predict.argmax(axis=1)) #[1]
-print(y_predict.argmax(axis=1)[0]) #1
-print(labels[y_predict.argmax(axis=1)[0]]) #B
+y_predict = Xception(input=x_test)
+#print(y_predict) #[[0.20842288 0.41051054 0.38106653]]
+#print(y_predict.argmax(axis=1)) #[1]
+#print(y_predict.argmax(axis=1)[0]) #1
+#print(labels[y_predict.argmax(axis=1)[0]]) #B

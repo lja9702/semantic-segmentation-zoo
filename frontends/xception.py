@@ -21,9 +21,8 @@ def separableconv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1
 
     return x
 
-def Xception(input_shape=(299, 299, 3), classes=1000, activation='softmax'):
+def Xception(input, classes=1000, activation='softmax'):
 
-    input = Input(shape = input_shape)
     ######## entry flow ########
     x = conv2d_block(input, 32, (3, 3), strides=(2, 2), activation='relu')
     x = conv2d_block(x, 64, (3, 3), activation='relu')
@@ -71,7 +70,3 @@ def Xception(input_shape=(299, 299, 3), classes=1000, activation='softmax'):
     model = models.Model(input, output, name='Xception')
 
     return model
-
-
-xception = Xception()
-xception.summary()
