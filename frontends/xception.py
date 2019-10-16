@@ -4,7 +4,6 @@ import tensorflow.keras
 from tensorflow.keras import models, layers
 from tensorflow.keras.layers import Add, Dense, Activation, Conv2D, MaxPooling2D, SeparableConv2D, BatchNormalization, Input, GlobalAveragePooling2D
 
-
 def conv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1), activation=None):
     x = Conv2D(filters, kernel_size, padding=padding, strides=strides)(x)
     x = BatchNormalization()(x)
