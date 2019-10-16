@@ -1,14 +1,12 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 import tensorflow as tf
 import tensorflow.keras
 from tensorflow.keras import models, layers
 from tensorflow.keras.layers import Add, Dense, Activation, Input
 from tensorflow.keras.layers import  Conv2D, MaxPooling2D, SeparableConv2D, BatchNormalization, GlobalAveragePooling2D
 
-TF_WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.4/xception_weights_tf_dim_ordering_tf_kernels_notop.h5'
-
 def conv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1), activation=None):
-    x = Conv2D(filters, kernel_size, padding=padding, strides=strides, use_bias = False)(x)
+    x = Conv2D(filters, kernel_size, padding=padding, strides=strides, use_bias=False)(x)
     x = BatchNormalization()(x)
     if activation:
         x = Activation(activation)(x)
@@ -16,21 +14,21 @@ def conv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1), activa
     return x
 
 def separableconv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1), activation=None):
-    x = SeparableConv2D(filters, kernel_size, padding=padding, strides=strides, use_bias = False)(x)
+    x = SeparableConv2D(filters, kernel_size, padding=padding, strides=strides, use_bias=False)(x)
     x = BatchNormalization()(x)
     if activation:
         x = Activation(activation)(x)
 
     return x
 
-def Xception(input=None, num_classes=1000, weights=None, activation='softmax'):
+def Xception(input=None, num_classes=1000, is_training=True, activation='softmax'):
 
     if input is None:
         input = Input(shape=(299, 299, 3))
 
     ######## entry flow ########
-    x = conv2d_block(input, 32, (3, 3), strides=(2, 2), activation='relu')
-    x = conv2d_block(x, 64, (3, 3), activation='relu')
+    x = conv2d_block(input, 32, (3, 3), strides=(2, 2), padding='valid', activation='relu')
+    x = conv2d_block(x, 64, (3, 3), padding='valid', activation='relu')
     filters = [128, 256, 728]
 
     for filter in filters:
@@ -74,11 +72,5 @@ def Xception(input=None, num_classes=1000, weights=None, activation='softmax'):
     output = Dense(num_classes, activation=activation)(x)
 
     model = models.Model(input, output, name='Xception')
-
-    if weights == 'imagenet':
-        weights_path = tf.keras.utils.get_file('xception_weights_tf_dim_ordering_tf_kernels_notop.h5',
-                                    TF_WEIGHTS_PATH,
-                                    cache_subdir='models')
-        model.load_weights(weights_path, by_name=True)
 
     return model

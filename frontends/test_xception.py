@@ -14,8 +14,10 @@ print(len(labels)) #1001
 del labels[0]
 print(len(labels)) #1000
 
+model1 = Xception(weights='imagenet')
 model2 = tf.keras.applications.xception.Xception() #Downloading data from https://github.com/fchollet/deep-learning-models/releases/download/v0.4/xception_weights_tf_dim_ordering_tf_kernels.h5
-model1 = Xception(weights = 'imagenet')
+model1.summary()
+model2.summary()
 ##########모델 예측
 
 file_path = tf.keras.utils.get_file('cock.png', 'http://www.farmersonlinemarket.co/wp-content/uploads/2018/01/cock.png')
