@@ -5,6 +5,8 @@ from tensorflow.keras import models, layers
 from tensorflow.keras.layers import Add, Dense, Activation, Input
 from tensorflow.keras.layers import  Conv2D, MaxPooling2D, SeparableConv2D, BatchNormalization, GlobalAveragePooling2D
 
+TF_WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.4/xception_weights_tf_dim_ordering_tf_kernels_notop.h5'
+
 def conv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1), activation=None):
     x = Conv2D(filters, kernel_size, padding=padding, strides=strides, use_bias=False)(x)
     x = BatchNormalization()(x)
@@ -21,7 +23,7 @@ def separableconv2d_block(x, filters, kernel_size, padding='same', strides=(1, 1
 
     return x
 
-def Xception(input=None, num_classes=1000, is_training=True, activation='softmax'):
+def Xception(input=None, weights = None, num_classes=1000, activation='softmax'):
 
     if input is None:
         input = Input(shape=(299, 299, 3))
@@ -29,30 +31,30 @@ def Xception(input=None, num_classes=1000, is_training=True, activation='softmax
     ######## entry flow ########
     x = conv2d_block(input, 32, (3, 3), strides=(2, 2), padding='valid', activation='relu')
     x = conv2d_block(x, 64, (3, 3), padding='valid', activation='relu')
-    filters = [128, 256, 728]
+    filters_list = [128, 256, 728]
 
-    for filter in filters:
-        residual_network = conv2d_block(x, filter, (1, 1), strides=(2, 2))
+    for filters in filters_list:
+        residual_network = conv2d_block(x, filters, (1, 1), strides=(2, 2))
 
-        if filter != filters[0]:
+        if filters != filters_list[0]:
             x = Activation(activation='relu')(x)
-        x = separableconv2d_block(x, filter, (3, 3), activation='relu')
-        x = separableconv2d_block(x, filter, (3, 3))
+        x = separableconv2d_block(x, filters, (3, 3), activation='relu')
+        x = separableconv2d_block(x, filters, (3, 3))
 
         x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-        x = Add()([x, residual_network])
+        x = tf.add(x, residual_network)
 
     ######## middle flow ########
     for i in range(8):
         residual_network = x
 
-        x = Activation(activation = 'relu')(x)
+        x = Activation(activation='relu')(x)
         x = separableconv2d_block(x, 728, (3, 3), activation='relu')
         x = separableconv2d_block(x, 728, (3, 3), activation='relu')
         x = separableconv2d_block(x, 728, (3, 3))
 
-        x = Add()([x, residual_network])
+        x = tf.add(x, residual_network)
 
     ######## exit flow ########
     residual_network = conv2d_block(x, 1024, (1, 1), strides=(2, 2))
@@ -62,7 +64,7 @@ def Xception(input=None, num_classes=1000, is_training=True, activation='softmax
     x = separableconv2d_block(x, 1024, (3, 3))
     x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    x = Add()([x, residual_network])
+    x = tf.add(x, residual_network)
 
     x = separableconv2d_block(x, 1536, (3, 3), activation='relu')
     x = separableconv2d_block(x, 2048, (3, 3), activation='relu')
@@ -72,5 +74,10 @@ def Xception(input=None, num_classes=1000, is_training=True, activation='softmax
     output = Dense(num_classes, activation=activation)(x)
 
     model = models.Model(input, output, name='Xception')
+    if weights == 'imagenet':
+        weights_path = tf.keras.utils.get_file('xception_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                                    TF_WEIGHTS_PATH,
+                                    cache_subdir='models')
+        model.load_weights(weights_path, by_name=True)
 
     return model
