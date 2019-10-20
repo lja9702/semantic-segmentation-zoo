@@ -29,30 +29,30 @@ def Xception(input=None, num_classes=1000, is_training=True, activation='softmax
     ######## entry flow ########
     x = conv2d_block(input, 32, (3, 3), strides=(2, 2), padding='valid', activation='relu')
     x = conv2d_block(x, 64, (3, 3), padding='valid', activation='relu')
-    filters = [128, 256, 728]
+    filters_list = [128, 256, 728]
 
-    for filter in filters:
-        residual_network = conv2d_block(x, filter, (1, 1), strides=(2, 2))
+    for filters in filters_list:
+        residual_network = conv2d_block(x, filters, (1, 1), strides=(2, 2))
 
-        if filter != filters[0]:
+        if filters != filters_list[0]:
             x = Activation(activation='relu')(x)
-        x = separableconv2d_block(x, filter, (3, 3), activation='relu')
-        x = separableconv2d_block(x, filter, (3, 3))
+        x = separableconv2d_block(x, filters, (3, 3), activation='relu')
+        x = separableconv2d_block(x, filters, (3, 3))
 
         x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-        x = Add()([x, residual_network])
+        x = tf.add(x, residual_network)
 
     ######## middle flow ########
     for i in range(8):
         residual_network = x
 
-        x = Activation(activation = 'relu')(x)
+        x = Activation(activation='relu')(x)
         x = separableconv2d_block(x, 728, (3, 3), activation='relu')
         x = separableconv2d_block(x, 728, (3, 3), activation='relu')
         x = separableconv2d_block(x, 728, (3, 3))
 
-        x = Add()([x, residual_network])
+        x = tf.add(x, residual_network)
 
     ######## exit flow ########
     residual_network = conv2d_block(x, 1024, (1, 1), strides=(2, 2))
@@ -62,7 +62,7 @@ def Xception(input=None, num_classes=1000, is_training=True, activation='softmax
     x = separableconv2d_block(x, 1024, (3, 3))
     x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 
-    x = Add()([x, residual_network])
+    x = tf.add(x, residual_network)
 
     x = separableconv2d_block(x, 1536, (3, 3), activation='relu')
     x = separableconv2d_block(x, 2048, (3, 3), activation='relu')
